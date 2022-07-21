@@ -1,8 +1,20 @@
-import numpy as np
+'''
+To run this program, data files has to be downloaded from kaggle by "kaggle competitions download -c titanic" command and
+unzipped to the directory named as "data".
+Trained model has accuracy something like 0.86.
+'''
 import pandas as pd
+import numpy as np
 import tensorflow as tf
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import InputLayer
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dropout
+from tensorflow.keras.losses import BinaryCrossentropy
+from tensorflow.keras.callbacks import EarlyStopping
 
 def onehot(data):
 	'''
@@ -132,48 +144,94 @@ def plothis(history):
 	plt.legend(['train', 'validation'], loc='upper left')
 	plt.show()
 
-def nastats(data):
-	'''
-	This function gives stats of nan values of given data. It just prints it does not return anything.
-	Implemented data types:
-		numpy.ndarray (with 1-D or 2-D)
-	'''
-	total_rows_include = 0
-	num_columns_include = []
-	data_isnan = np.isnan(data)
-	for i in range(data_isnan.shape[1]):
-		num_columns_include.append(0)
-	for i in range(data_isnan.shape[0]):
-		if(type(data_isnan[i]) == np.ndarray):
-			if(data_isnan[i].any()):
-				total_rows_include = total_rows_include+1
-			for v in range(data_isnan.shape[1]):
-				if(data_isnan[i][v]):
-					num_columns_include[v] = num_columns_include[v]+1
-		else:
-			# TODO: Handle the 1-D numpy.ndarray
-			pass
-	print("=====================NASTATS=====================")
-	print("Total rows include nan:",total_rows_include)
-	print("Columns's counts:")
-	for i in range(len(num_columns_include)):
-		print("\t",i,":",num_columns_include[i])
-	print("=================================================")
-	print("\n")
+# Reading data and preview.
+print("Reading data files...")
+train = pd.read_csv("data/train.csv")
+test = pd.read_csv("data/test.csv")
 
-def natomedian(data):
-	'''
-	This function replace nan values with median value.
-	'''
-	data_isnan = np.isnan(data)
-	median_val = np.nanmedian(data)
-	print("median val:",median_val)
-	for i in range(data_isnan.shape[0]):
-		if(type(data_isnan[i]) == np.ndarray):
-			for v in range(data_isnan.shape[1]):
-				if(data_isnan[i][v]):
-					data[i][v] = median_val
-		else:
-			# TODO: Handle the 1-D numpy.ndarray
-			pass
-	return data
+print("train data preview:")
+print(train.head())
+print("\ntest data preview:")
+print(test.head())
+print("\n")
+print("DONE\n")
+
+# Preprocessing data and preview.
+print("Preprocessing data...")
+train_y = np.asarray(train.pop("Survived"))
+train_x = []
+train_x.append(onehot(train["Pclass"]))
+train_x.append(onehot(train["Sex"]))
+train_x.append(normalize(train["Age"]))
+train_x.append(train["SibSp"].to_numpy())
+train_x.append(train["Parch"].to_numpy())
+train_x = concatenate(train_x)
+train_x, train_y = removena(train_x, train_y)
+
+test_x = []
+test_x.append(onehot(test["Pclass"]))
+test_x.append(onehot(test["Sex"]))
+test_x.append(normalize(test["Age"]))
+test_x.append(test["SibSp"].to_numpy())
+test_x.append(test["Parch"].to_numpy())
+test_x = concatenate(test_x)
+
+print("train labels:")
+print(train_y)
+print("train labels shape:", train_y.shape)
+print("train features:")
+print(train_x)
+print("train features shape:", train_x.shape)
+print("DONE\n")
+
+# Building model.
+print("Building model...")
+model = Sequential()
+model.add(InputLayer(input_shape=(8,)))
+model.add(Dense(5000, kernel_initializer="uniform", activation="relu"))
+model.add(Dropout(0.3))
+model.add(Dense(1000, kernel_initializer="uniform", activation="relu"))
+model.add(Dropout(0.3))
+model.add(Dense(10, kernel_initializer="uniform", activation="relu"))
+model.add(Dense(1, kernel_initializer="uniform", activation="sigmoid"))
+model.summary()
+print("DONE\n")
+
+callbacks = [EarlyStopping(patience=3)]
+
+# Compiling model.
+print("Compiling model...")
+model.compile(
+	optimizer="adam",
+	loss=BinaryCrossentropy(),
+	metrics=["accuracy"]
+)
+print("DONE\n")
+
+# Training model.
+print("Training...")
+history = model.fit(
+	train_x,
+	train_y,
+	epochs=17
+)
+print("DONE\n")
+
+# Plotting history.
+
+# Generating submission file
+
+predictions = model.predict(test_x)
+submission = {"PassengerId":[],
+        "Survived":[]}
+passenger_id = int(test["PassengerId"][0])
+for i in predictions:
+    submission["PassengerId"].append(passenger_id)
+    if(i[0] >= 0.5):
+        submission["Survived"].append(1)
+    else:
+        submission["Survived"].append(0)
+    passenger_id+=1
+submission = pd.DataFrame.from_dict(submission)
+print(submission.head())
+submission.to_csv("submission.csv", index=False)
