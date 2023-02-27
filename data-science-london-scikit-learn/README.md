@@ -4,15 +4,15 @@ There is not much information about the competition on Kaggle. But it could be u
 
 ## Solution
 First we import the necessary libraries.
-```(Python)
+```python
 import sklearn
 import pandas as pd
 import numpy as np
 ```
 Pandas and Numpy are used for data reading and processing. And sklearn is the Scikit-Learn library.
 
-```(Python)
-train_x = pd.read_csv('data/train.csv', header=None)
+```python
+rain_x = pd.read_csv('data/train.csv', header=None)
 train_y = pd.read_csv('data/trainLabels.csv', header=None)
 
 test = pd.read_csv('data/test.csv', header=None)
@@ -57,7 +57,7 @@ test length = 9000
 
 We read the data successfully. Now its time to seek if there is any nan value.
 
-```(Python)
+```python
 train_x_nan_count = train_x.isna().sum().sum()
 train_y_nan_count = train_y.isna().sum().sum()
 test_nan_count = test.isna().sum().sum()
@@ -90,7 +90,7 @@ There isn't any nan value on test dataset
 
 Which means our data has no nan value.
 
-```(Python)
+```python
 mins = train_x.min()
 maxs = train_x.max()
 
@@ -147,7 +147,7 @@ In the above code we look for maximum and minimum values of columns.
 
 Now it is time to preprocess the data. First let's transform dataframes to numpy arrays.
 
-```(Python)
+```python
 train_x = np.asarray(train_x)
 train_y = np.asarray(train_y)
 test = np.asarray(test)
@@ -155,7 +155,7 @@ test = np.asarray(test)
 
 Then normalize them with builtin numpy function
 
-```(Python)
+```python
 from sklearn.preprocessing import normalize
 train_x = normalize(train_x)
 test = normalize(test)
@@ -163,7 +163,7 @@ test = normalize(test)
 
 I think %10 of validation set is enough for this solution. Let's separate the validation set from training set.
 
-```(Python)
+```python
 validation_x = train_x[900:]
 validation_y = np.ravel(train_y[900:])
 train_x = train_x[:900]
@@ -172,7 +172,7 @@ train_y = np.ravel(train_y[:900])
 
 Printing out the shape and data types of new datasets.
 
-```(Python)
+```python
 print('validation features shape=', validation_x.shape, '- type:', type(validation_x))
 print('validation labels shape=', validation_y.shape, '- type:', type(validation_x))
 print('train features shape=', train_x.shape, '- type:', type(validation_x))
@@ -181,7 +181,7 @@ print('train labels shape=', train_y.shape, '- type:', type(validation_x))
 
 Everything looks fine. It is time to build the model and fine tune it. To do this we can implement a function named as **gradient_boosting()**.
 
-```(Python)
+```python
 def gradient_boosting():
     print('gradient boosting classifier')
     from sklearn.ensemble import GradientBoostingClassifier
@@ -203,13 +203,13 @@ def gradient_boosting():
 
 **GridSearchCV** class is required for fine tuning. It takes **param_grid** as parameter for configurations to try and **cv** as parameter to know how many times to try each configuration. **verbose** determines to output progress or not.
 
-```(Python)
+```python
 gradient_boosting()
 ```
 
 Now it is time to run the model.
 
-```(Python)
+```python
 gradient boosting classifier
 Fitting 5 folds for each of 36 candidates, totalling 180 fits
 [CV] END ....learning_rate=0.1, max_depth=1, n_estimators=50; total time=   0.2s
