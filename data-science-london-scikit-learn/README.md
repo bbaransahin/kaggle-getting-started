@@ -179,6 +179,13 @@ print('train features shape=', train_x.shape, '- type:', type(validation_x))
 print('train labels shape=', train_y.shape, '- type:', type(validation_x))
 ```
 
+```
+validation features shape= (100, 40) - type: <class 'numpy.ndarray'>
+validation labels shape= (100,) - type: <class 'numpy.ndarray'>
+train features shape= (900, 40) - type: <class 'numpy.ndarray'>
+train labels shape= (900,) - type: <class 'numpy.ndarray'>
+```
+
 Everything looks fine. It is time to build the model and fine tune it. To do this we can implement a function named as **gradient_boosting()**.
 
 ```python
@@ -209,7 +216,7 @@ gradient_boosting()
 
 Now it is time to run the model.
 
-```python
+```
 gradient boosting classifier
 Fitting 5 folds for each of 36 candidates, totalling 180 fits
 [CV] END ....learning_rate=0.1, max_depth=1, n_estimators=50; total time=   0.2s
